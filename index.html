@@ -3,23 +3,40 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>موزیک پلیر مدرن و حرفه‌ای</title>
+<title>NEWNIOM podcast</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap');
-
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  box-sizing: border-box;
+}
   body {
     margin: 0;
     font-family: 'Vazirmatn', sans-serif;
     background-color: #FCF9EA;
     color: #5A4B3C;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* کانتینر محتوا که قراره blur بشه */
+  #mainContent {
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    overflow-y: auto;
+    transition: filter 0.3s ease;
+  }
+
+  .blurred {
+    filter: blur(5px);
+    pointer-events: none;
+    user-select: none;
   }
 
   .music-list {
     flex: 1;
-    overflow-y: auto;
     padding: 20px 16px;
   }
 
@@ -35,6 +52,375 @@
   }
   .music-item:hover {
     background-color: #f5f0e6;
+    transform: translateX(6px);
+  }
+  .music-item img {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-right: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 8px rgba(90,75,60,0.15);
+  }
+  .music-info {
+    flex: 1;
+    font-weight: 700;
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* پلیر پایین */
+  .player {
+    background: rgba(90,75,60,0.9);
+    color: #F0E9D9;
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    box-shadow: 0 -6px 20px rgba(90,75,60,0.6);
+  }
+  .player img {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-right: 18px;
+    box-shadow: 0 6px 15px rgba(90,75,60,0.4);
+  }
+  .player-info {
+    flex: 1;
+  }
+  .player-info .title {
+    font-weight: 900;
+    font-size: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .progress-container {
+    margin-top: 10px;
+  }
+  input[type=range] {
+    width: 100%;
+    height: 8px;
+    -webkit-appearance: none;
+    background: linear-gradient(90deg, #d4a373 var(--seek-percent, 0%), rgba(255,255,255,0.3) var(--seek-percent, 0%));
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #d4a373;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px #d4a373;
+    transition: background-color 0.3s ease;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: #d4a373;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px #d4a373;
+    transition: background-color 0.3s ease;
+  }
+  input[type=range]:hover::-webkit-slider-thumb {
+    background: #bb7f40;
+    box-shadow: 0 0 18px #bb7f40;
+  }
+  input[type=range]:hover::-moz-range-thumb {
+    background: #bb7f40;
+    box-shadow: 0 0 18px #bb7f40;
+  }
+
+  .controls {
+    margin-left: 22px;
+  }
+  .controls button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .controls button:hover {
+    transform: scale(1.15);
+  }
+  .controls button img {
+    width: 38px;
+    height: 38px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+  }
+
+  @media (max-width: 480px) {
+    .music-item img {
+      width: 48px;
+      height: 48px;
+      margin-right: 12px;
+    }
+    .music-info {
+      font-size: 16px;
+    }
+    .player img {
+      width: 56px;
+      height: 56px;
+      margin-right: 14px;
+    }
+    .player-info .title {
+      font-size: 16px;
+    }
+    .controls button img {
+      width: 32px;
+      height: 32px;
+    }
+    .player {
+      padding: 12px 20px;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+    body {
+      padding-bottom: calc(env(safe-area-inset-bottom));
+    }
+  }
+
+  /* لودینگ اولیه */
+  #pageLoader {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #FCF9EA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+  }
+  #pageLoader .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #d4a373;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  /* لودینگ موزیک */
+  #musicLoader {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(252, 249, 234, 0.9);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    font-size: 20px;
+    font-weight: 700;
+    color: #5A4B3C;
+    user-select: none;
+  }
+  #musicLoader .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #d4a373;
+    border-top: 3px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 15px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+
+<!-- لودینگ اولیه -->
+<div id="pageLoader">
+  <div class="spinner"></div>
+</div>
+
+<!-- لودینگ موزیک -->
+<div id="musicLoader">
+  <div class="spinner"></div>
+  <div>Loading music...</div>
+</div>
+
+<!-- محتوای اصلی که باید blur بشه -->
+<div id="mainContent">
+  <div class="music-list" id="musicList"></div>
+
+  <div class="player" id="player" style="display:none;">
+    <img id="playerCover" src="" alt="کاور موزیک">
+    <div class="player-info">
+      <div class="title" id="playerTitle">---</div>
+      <div class="progress-container">
+        <input type="range" id="progressBar" value="0" min="0" max="100" step="1" style="--seek-percent:0%">
+      </div>
+    </div>
+    <div class="controls">
+      <button id="playPauseBtn" aria-label="پخش/توقف">
+        <img id="playPauseIcon" src="https://biaupload.com/do.php?imgf=org-25a578dd82bc1.png" alt="play icon" />
+      </button>
+    </div>
+  </div>
+</div>
+
+<audio id="audio"></audio>
+
+<script>
+  const tracks = [
+    {
+      title: "Wholeness Over Perfection",
+      src: "https://uploadkon.ir/uploads/5ceb19_25Wholeness-Over-Perfection-4-.mp3",
+      cover: "https://uploadkon.ir/uploads/2fc719_2520250708-001928.png"
+    },
+    {
+      title: "Calm Vibes",
+      src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+      cover: "https://picsum.photos/seed/2/200/200"
+    }
+  ];
+
+  const musicList = document.getElementById("musicList");
+  const player = document.getElementById("player");
+  const playerCover = document.getElementById("playerCover");
+  const playerTitle = document.getElementById("playerTitle");
+  const progressBar = document.getElementById("progressBar");
+  const playPauseBtn = document.getElementById("playPauseBtn");
+  const playPauseIcon = document.getElementById("playPauseIcon");
+  const audio = document.getElementById("audio");
+
+  const pageLoader = document.getElementById("pageLoader");
+  const musicLoader = document.getElementById("musicLoader");
+  const mainContent = document.getElementById("mainContent");
+
+  let currentTrackIndex = -1;
+  let isPlaying = false;
+
+  // حذف لودینگ اولیه وقتی صفحه آماده شد
+  window.addEventListener("load", () => {
+    pageLoader.style.opacity = "0";
+    setTimeout(() => {
+      pageLoader.style.display = "none";
+    }, 500);
+  });
+
+  function createMusicList() {
+    tracks.forEach((track, index) => {
+      const item = document.createElement("div");
+      item.classList.add("music-item");
+      item.innerHTML = `
+        <img src="${track.cover}" alt="${track.title}" />
+        <div class="music-info">${track.title}</div>
+      `;
+      item.addEventListener("click", () => {
+        loadTrack(index);
+        playTrack();
+      });
+      musicList.appendChild(item);
+    });
+  }
+
+  function loadTrack(index) {
+    if (index < 0 || index >= tracks.length) return;
+
+    // فعال کردن لودینگ موزیک و بلور کردن فقط محتوای اصلی
+    musicLoader.style.display = "flex";
+    mainContent.classList.add("blurred");
+
+    const track = tracks[index];
+    audio.src = track.src;
+    playerCover.src = track.cover;
+    playerTitle.textContent = track.title;
+    currentTrackIndex = index;
+    progressBar.value = 0;
+    progressBar.style.setProperty('--seek-percent', '0%');
+    player.style.display = "flex";
+
+    let loaded = false;
+    function hideLoader() {
+      if (!loaded) {
+        loaded = true;
+        musicLoader.style.display = "none";
+        mainContent.classList.remove("blurred");
+      }
+    }
+
+    // حذف listener قبلی برای ایونت‌ها اگر وجود داشته باشه
+    audio.oncanplaythrough = null;
+    audio.oncanplay = null;
+    audio.onloadeddata = null;
+
+    // چند event که تقریباً وقتی موزیک آماده پخشه
+    audio.oncanplaythrough = hideLoader;
+    audio.oncanplay = hideLoader;
+    audio.onloadeddata = hideLoader;
+
+    // تایم‌اوت برای جلوگیری از موندن لودینگ بیش از 10 ثانیه
+    setTimeout(hideLoader, 10000);
+  }
+
+  function playTrack() {
+    audio.play();
+    isPlaying = true;
+    playPauseIcon.src = "https://biaupload.com/do.php?imgf=org-63a191c956c32.png"; // pause icon
+  }
+
+  function pauseTrack() {
+    audio.pause();
+    isPlaying = false;
+    playPauseIcon.src = "https://biaupload.com/do.php?imgf=org-25a578dd82bc1.png"; // play icon
+  }
+
+  playPauseBtn.addEventListener("click", () => {
+    if (!audio.src) return;
+    if (isPlaying) {
+      pauseTrack();
+    } else {
+      playTrack();
+    }
+  });
+
+  audio.addEventListener("timeupdate", () => {
+    if (!audio.duration) return;
+    const progressPercent = (audio.currentTime / audio.duration) * 100;
+    progressBar.value = progressPercent;
+    progressBar.style.setProperty('--seek-percent', `${progressPercent}%`);
+  });
+
+  progressBar.addEventListener("input", () => {
+    if (!audio.duration) return;
+    const seekTime = (progressBar.value / 100) * audio.duration;
+    audio.currentTime = seekTime;
+  });
+
+  audio.addEventListener("ended", () => {
+    pauseTrack();
+    progressBar.value = 0;
+    progressBar.style.setProperty('--seek-percent', `0%`);
+  });
+
+  createMusicList();
+</script>
+
+</body>
+</html>    background-color: #f5f0e6;
     transform: translateX(6px);
   }
   .music-item img {
