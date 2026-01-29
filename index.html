@@ -32,7 +32,15 @@
     overflow-y: auto;
     transition: filter 0.3s ease;
   }
+}
 
+#mainContent.blurred::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35); /* تیرگی */
+  pointer-events: none;
+}
   .blurred {
     filter: blur(5px);
     pointer-events: none;
@@ -44,26 +52,7 @@
     padding: 20px 16px;
   }
 
-  
-  .music-item:hover {
-    background-color: #f5f0e6;
-    transform: translateX(6px);
-  }
-  .music-item img {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    object-fit: cover;
-    margin-right: 16px;
-    flex-shrink: 0;
-    box-shadow: 0 4px 8px rgba(90,75,60,0.15);
-  }
-  .music-info {
-    flex: 1;
-    font-weight: 700;
-    font-size: 18px;
-    white-space: nowrap;
-     .music-item {
+  .music-item {
     display: flex;
     align-items: center;
     background: #fff;
@@ -105,20 +94,6 @@
   border-color: rgba(255, 255, 255, 0.55);
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.22);
-  } overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* پلیر پایین */
-  .player {
-    background: rgba(90,75,60,0.9);
-    color: #F0E9D9;
-    display: flex;
-    align-items: center;
-    padding: 12px 20px;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    box-shadow: 0 -6px 20px rgba(90,75,60,0.6);
   }
   .music-item img {width: 150px;
   height: 150px;
@@ -129,7 +104,52 @@
   box-shadow:
     0 6px 18px rgba(0, 0, 0, 0.25);
     
-                  }
+  }
+  .music-info {
+    flex: 1;
+    font-weight: 700;
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #FFFFFF;
+  }
+
+
+
+  /* پلیر پایین */
+  
+  .player {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  color: #F0E9D9;
+  box-shadow: 0 -6px 20px rgba(0,0,0,0.4);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  /* گلس + گرادیانت متحرک */
+  background: linear-gradient(270deg, #c084fc, #f87171, #facc15, #34d399, #60a5fa);
+  background-size: 1000% 1000%;
+  animation: gradientMove 12s ease infinite;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+  .player img {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-right: 18px;
+    box-shadow: 0 6px 15px rgba(90,75,60,0.4);
+  }
   .player-info {
     flex: 1;
   }
@@ -198,7 +218,17 @@
     height: 38px;
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
   }
-
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
   @media (max-width: 480px) {
     .music-item img {
       width: 48px;
@@ -278,7 +308,6 @@
 
     user-select: none;
   }
-  
   #musicLoader .spinner {
     width: 40px;
     height: 40px;
@@ -304,6 +333,7 @@
 <!-- لودینگ موزیک -->
 <div id="musicLoader">
   <div class="spinner"></div>
+  
 </div>
 
 <!-- محتوای اصلی که باید blur بشه -->
@@ -466,9 +496,9 @@
 
 </body>
 </html>   
-<html>
- <style>
-  
+<style>
+    background-color: #f5f0e6;
+    transform: translateX(6px);
   }
   .music-item img {
     width: 60px;
@@ -487,9 +517,30 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+.player {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  color: #F0E9D9;
+  box-shadow: 0 -6px 20px rgba(0,0,0,0.5);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
 
-  /* پلیر پایین */
-  
+  /* گرادیانت تاریک و شیشه‌ای */
+  background: linear-gradient(270deg, #7e3af2, #ef4444, #f59e0b, #10b981, #3b82f6);
+  background-size: 1000% 1000%;
+  animation: gradientMove 30s ease infinite;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
   .player img {
     width: 70px;
     height: 70px;
@@ -515,29 +566,7 @@
     width: 100%;
     height: 8px;
     -webkit-appearance: none;
-    background: linear-gradient(90deg, #d4a373 var(--seek-percent, 0%), rgba(255,255,255,0.3) va  .player {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  border-top-left-radius: 16px;
-  border-top-right-radius: 16px;
-  color: #F0E9D9;
-  box-shadow: 0 -6px 20px rgba(0,0,0,0.4);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-
-  /* گلس + گرادیانت متحرک */
-  background: linear-gradient(270deg, #c084fc, #f87171, #facc15, #34d399, #60a5fa);
-  background-size: 1000% 1000%;
-  animation: gradientMove 12s ease infinite;
-
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  }r(--seek-percent, 0%));
+    background: linear-gradient(90deg, #d4a373 var(--seek-percent, 0%), rgba(255,255,255,0.3) var(--seek-percent, 0%));
     border-radius: 12px;
     cursor: pointer;
     transition: background 0.3s ease;
@@ -589,7 +618,7 @@
     filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
   }
 
-   @keyframes gradientMove {
+@keyframes gradientMove {
   0% {
     background-position: 0% 50%;
   }
@@ -599,7 +628,7 @@
   100% {
     background-position: 0% 50%;
   }
-   }
+}
   @media (max-width: 480px) {
     .music-item img {
       width: 48px;
